@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Typing Test Side by Side</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
+
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+
+  body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    font-family: 'Roboto Mono', monospace;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    box-shadow:
+      0 0 20px 1px #00fff7,
+      inset 0 0 30px 5px #00fff7;
+    padding: 30px 40px;
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 3rem;
+    color: #00fff7;
+    margin-bottom: 20px;
+    letter-spacing: 4px;
+    text-shadow: 0 0 15px #00fff7;
+  }
+
+  .level-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 30px;
+  }
+
+  .level-button {
+    background: transparent;
+    border: 2px solid #00fff7;
+    padding: 12px 28px;
+    color: #00fff7;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px #00fff7;
+  }
+
+  .level-button:hover,
+  .level-button.active {
+    background: #00fff7;
+    color: #003333;
+    box-shadow:
+      0 0 15px 5px #00fff7,
+      inset 0 0 15px 4px #003333;
+  }
+
+  .text-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+
+  .text-block {
+    background: rgba(0, 255, 247, 0.15);
+    border-radius: 15px;
+    padding: 20px 25px;
+    width: 45%;
+    min-height: 200px;
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: #00fff7;
+    box-shadow: inset 0 0 20px #00fff7;
+    font-weight: 500;
+    white-space: pre-wrap;
+    text-align: justify;
+    user-select: none;
+  }
+
+  #textInput {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1.3rem;
+    border-radius: 15px;
+    border: 2px solid #00fff7;
+    background: rgba(0, 0, 0, 0.25);
+    color: #00fff7;
+    outline: none;
+    box-shadow: 0 0 8px #00fff7;
+    transition: border-color 0.3s ease;
+    margin-bottom: 25px;
+  }
+
+  #textInput:focus {
+    border-color: #00ccbb;
+    box-shadow: 0 0 15px #00ccbb;
+  }
+
+  #startBtn {
+    margin-top: 10px;
+    background: #00fff7;
+    color: #003333;
+    border: none;
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding: 14px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow:
+      0 0 15px 5px #00fff7,
+      inset 0 0 15px 4px #003333;
+    transition: all 0.3s ease;
+  }
+
+  #startBtn:hover {
+    background: #00ccbb;
+    box-shadow: 0 0 25px 10px #00ccbb;
+    color: #001f1b;
+  }
+
+  .stats {
+    margin-top: 25px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #00fff7;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .stats div span:first-child {
+    min-width: 110px;
+    display: inline-block;
+  }
+
+  /* Highlight colors for original text (left) */
+  .correct {
+    color: #00ff99;
+    text-shadow: 0 0 5px #00ff99;
+  }
+
+  .incorrect {
+    color: #ff0033;
+    text-shadow: 0 0 5px #ff0033;
+  }
+
+  /* Highlight colors for typed text (right) */
+  .typed-correct {
+    color: #00ff99;
+  }
+  .typed-incorrect {
+    color: #ff0033;
+    text-decoration: underline;
+  }
+
+  /* Modal styling */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .modal-bg.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal {
+    background: #022c2c;
+    padding: 30px 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px #00fff7;
+    color: #00fff7;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .modal h2 {
+    margin-bottom: 20px;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .modal p {
+    font-size: 1.2rem;
+    margin: 15px 0;
+  }
+
+  .modal button {
+    margin-top: 20px;
+    background: #00fff7;
+    color: #003333;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 15px #00fff7;
+    transition: background-color 0.3s ease;
+  }
+
+  .modal button:hover {
+    background: #00ccbb;
+  }
+
+  /* Responsive */
+  @media(max-width: 720px) {
+    .text-container {
+      flex-direction: column;
+    }
+    .text-block {
+      width: 100%;
+      min-height: 160px;
+      margin-bottom: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>NextGen Typing Test</h1>
+
+  <div class="level-buttons">
+    <button class="level-button active" data-level="easy">Easy</button>
+    <button class="level-button" data-level="medium">Medium</button>
+    <button class="level-button" data-level="hard">Hard</button>
+  </div>
+
+  <div class="text-container">
+    <div class="text-block" id="textDisplay"></div>
+    <div class="text-block" id="typedDisplay" style="user-select:text;"></div>
+  </div>
+
+  <input type="text" id="textInput" placeholder="Start typing here..." autocomplete="off" spellcheck="false" disabled />
+
+  <button id="startBtn">Start Test</button>
+
+  <div class="stats">
+    <div><span>Time:</span><span id="timer">0</span>s</div>
+    <div><span>WPM:</span><span id="wpm">0</span></div>
+    <div><span>Accuracy:</span><span id="accuracy" style="font-size:1.7rem; font-weight:900;">0</span>%</div>
+  </div>
+</div>
+
+<!-- Modal for results -->
+<div class="modal-bg" id="resultModal">
+  <div class="modal">
+    <h2>Test Results</h2>
+    <p><strong>Time Elapsed:</strong> <span id="modalTime">0</span> seconds</p>
+    <p><strong>Words Per Minute:</strong> <span id="modalWPM">0</span></p>
+    <p><strong>Accuracy:</strong> <span id="modalAccuracy">0</span>%</p>
+    <button id="closeModalBtn">Close</button>
+  </div>
+</div>
+
+<script>
+  const textDisplay = document.getElementById('textDisplay');
+  const typedDisplay = document.getElementById('typedDisplay');
+  const textInput = document.getElementById('textInput');
+  const startBtn = document.getElementById('startBtn');
+  const timerDisplay = document.getElementById('timer');
+  const wpmDisplay = document.getElementById('wpm');
+  const accuracyDisplay = document.getElementById('accuracy');
+  const levelButtons = document.querySelectorAll('.level-button');
+
+  const modal = document.getElementById('resultModal');
+  const modalTime = document.getElementById('modalTime');
+  const modalWPM = document.getElementById('modalWPM');
+  const modalAccuracy = document.getElementById('modalAccuracy');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  const texts = {
+    easy: [
+      "Typing is a useful skill that improves with consistent practice. Try to keep your fingers on the home row and focus on accuracy. Speed will come naturally with time.",
+      "The more you practice typing daily, the better and faster you become. Make sure to keep a good posture and avoid looking at the keyboard."
+    ],
+    medium: [
+      "Programming is a versatile field that requires not only knowledge of languages but also good typing skills to write code efficiently and without errors. Consistency is key in mastering any new skill.",
+      "Debugging code is often as important as writing it. It demands patience, attention to detail, and sometimes a fresh perspective to find tricky issues in complex programs."
+    ],
+    hard: [
+      "Cryptography is an essential part of cybersecurity, allowing secure communication by encrypting data and verifying identities. It uses advanced mathematics and algorithms to protect information from adversaries.",
+      "Optimization algorithms improve software performance by reducing time and resource consumption. Efficient coding and testing are necessary to achieve high quality in complex applications."
+    ]
+  };
+
+  const timeLimits = {
+    easy: 60,
+    medium: 90,
+    hard: 120
+  };
+
+  let currentText = '';
+  let timer = null;
+  let timeLeft = 0;
+  let started = false;
+  let selectedLevel = 'easy';
+  let startTime = 0;
+
+  levelButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (started) return; // Prevent level change during test
+      levelButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedLevel = btn.getAttribute('data-level');
+      resetTest();
+    });
+  });
+
+  startBtn.addEventListener('click', () => {
+    if (started) return;
+    startTest();
+  });
+
+  closeModalBtn.addEventListener('click', () => {
+    modal.classList.remove('active');
+  });
+
+  function resetTest() {
+    clearInterval(timer);
+    started = false;
+    timeLeft = timeLimits[selectedLevel];
+    timerDisplay.textContent = timeLeft;
+    wpmDisplay.textContent = 0;
+    accuracyDisplay.textContent = 0;
+    textInput.value = '';
+    textInput.disabled = true;
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start Test';
+    selectRandomText();
+    renderOriginalText();
+    typedDisplay.textContent = '';
+  }
+
+  function selectRandomText() {
+    const arr = texts[selectedLevel];
+    currentText = arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // Highlight original text characters: green if correct, red if wrong or missing
+  function renderOriginalText() {
+    const input = textInput.value;
+    let html = '';
+    for (let i = 0; i < currentText.length; i++) {
+      const char = currentText[i];
+      if (i < input.length) {
+        html += char === input[i]
+          ? `<span class="correct">${char}</span>`
+          : `<span class="incorrect">${char}</span>`;
+      } else {
+        html += `<span>${char}</span>`;
+      }
+    }
+    textDisplay.innerHTML = html;
+  }
+
+  // Render typed text side by side with correct/wrong highlights
+  function renderTypedText() {
+    const input = textInput.value;
+    let html = '';
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      if (i < currentText.length) {
+        html += char === currentText[i]
+          ? `<span class="typed-correct">${char}</span>`
+          : `<span class="typed-incorrect">${char}</span>`;
+      } else {
+        // Extra chars typed beyond original length always incorrect
+        html += `<span class="typed-incorrect">${char}</span>`;
+      }
+    }
+    typedDisplay.innerHTML = html;
+  }
+
+  function startTimer() {
+    startTime = Date.now();
+    timer = setInterval(() => {
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        finishTest(true);
+      } else {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+      }
+    }, 1000);
+  }
+
+  // Accuracy strictly = (correct chars typed / total chars typed) * 100
+  // So any wrong char reduces accuracy immediately.
+  function updateStats() {
+    const input = textInput.value;
+    let correctChars = 0;
+
+    for (let i = 0; i < input.length; i++) {
+      if (i < currentText.length && input[i] === currentText[i]) {
+        correctChars++;
+      }
+    }
+
+    const accuracy = input.length === 0 ? 0 : Math.round((correctChars / input.length) * 100);
+
+    const elapsedSeconds = (Date.now() - startTime) / 1000;
+    const minutes = elapsedSeconds / 60;
+
+    // Words typed count is by splitting on spaces, but we strictly count all chars here
+    const wordsTyped = input.trim().split(/\s+/).filter(w => w.length > 0).length;
+    const wpm = minutes > 0 ? Math.round(wordsTyped / minutes) : 0;
+
+    accuracyDisplay.textContent = accuracy;
+    wpmDisplay.textContent = wpm;
+
+    return { accuracy, wpm, elapsedSeconds };
+  }
+
+  function finishTest(timeOver = false) {
+    clearInterval(timer);
+    textInput.disabled = true;
+    startBtn.disabled = false;
+    startBtn.textContent = 'Restart Test';
+    started = false;
+
+    const { accuracy, wpm, elapsedSeconds } = updateStats();
+
+    modalTime.textContent = timeOver ? timeLimits[selectedLevel] : Math.floor(elapsedSeconds);
+    modalWPM.textContent = wpm;
+    modalAccuracy.textContent = accuracy;
+
+    modal.classList.add('active');
+  }
+
+  function startTest() {
+    started = true;
+    timeLeft = timeLimits[selectedLevel];
+    timerDisplay.textContent = timeLeft;
+    wpmDisplay.textContent = 0;
+    accuracyDisplay.textContent = 0;
+    textInput.disabled = false;
+    textInput.value = '';
+    textInput.focus();
+    startBtn.disabled = true;
+    startBtn.textContent = 'Test Running...';
+
+    selectRandomText();
+    renderOriginalText();
+    typedDisplay.textContent = '';
+    startTimer();
+  }
+
+  textInput.addEventListener('input', () => {
+    if (!started) return;
+
+    renderOriginalText();
+    renderTypedText();
+    const stats = updateStats();
+
+    // Stop if typed length >= original text length (can add buffer)
+    if (textInput.value.length >= currentText.length) {
+      finishTest();
+    }
+  });
+
+  resetTest();
+</script>
+
+</body>
+</html>
