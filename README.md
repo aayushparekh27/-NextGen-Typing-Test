@@ -22,4 +22,4 @@ CSS3 (Neon-glow glassmorphism UI)
 Vanilla JavaScript
 
 Feel free to fork, contribute, or suggest improvements!
-📩 For any queries: [Your Email]
+📩 For any queries: [aayushparekh26@gmail.com]
